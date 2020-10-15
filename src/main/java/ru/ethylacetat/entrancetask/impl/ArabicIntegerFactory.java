@@ -6,7 +6,7 @@ public class ArabicIntegerFactory implements NumberFactory {
 
     @Override
     public Number getNumber(int number) {
-        return Integer.valueOf(number);
+        return number;
     }
 
     @Override

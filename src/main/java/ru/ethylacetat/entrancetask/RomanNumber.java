@@ -2,35 +2,27 @@ package ru.ethylacetat.entrancetask;
 
 import java.util.Objects;
 
+// Serializable
 public class RomanNumber extends Number implements Comparable<RomanNumber> {
 
-    // TODO: Value cache
-    // TODO: Value cache with -Darg
-    // TODO: static valueOf() - get cache value
-
-
-    //+ // TODO: static string parseToRoman(int)
-    //+ // TODO: static int parseToArabic(string)
-
-    // TODO: static min(), max()
-    // TODO: hashcode(), equals()
-    // TODO: toString()
-
-
-    private static String[][] arabicToRomanRank = {
+    private static final String[][] arabicToRomanRank = {
             {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"},
             {"X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC",},
             {"C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",},
             {"M", "MM", "MMM", "N", "N", "N", "N", "N", "N", "N"}
     };
 
-    private static final RomanNumber MAX_VALUE = new RomanNumber(1);
-    private static final RomanNumber MIN_VALUE = new RomanNumber(3999);
+    private static final int MAX_ARABIC_REPRESENTATION = 3999;
+    private static final int MIN_ARABIC_REPRESENTATION = 1;
+
+    public static final RomanNumber MAX_VALUE = new RomanNumber(MAX_ARABIC_REPRESENTATION);
+    public static final RomanNumber MIN_VALUE = new RomanNumber(MIN_ARABIC_REPRESENTATION);
 
     private final String value;
     private final int arabicRepresentation;
 
     // TODO: protected?
+    // TODO: ArithmeticException
     public RomanNumber(int arabicRepresentation) {
         this.arabicRepresentation = arabicRepresentation;
         this.value = parseToRoman(arabicRepresentation);
@@ -39,18 +31,6 @@ public class RomanNumber extends Number implements Comparable<RomanNumber> {
     public RomanNumber(String romanRepresentation) {
         this.value = romanRepresentation;
         this.arabicRepresentation = parseToArabic(romanRepresentation);
-    }
-
-    // TODO: ПРоыверка границ и эксепшены
-    public static String parseToRoman(String arabic) {
-        StringBuilder builder = new StringBuilder();
-        for (int rank = 0; rank < arabic.length(); rank++) {
-            int rankValue = Integer.parseInt(Character.toString(arabic.charAt(rank)));
-            if (rankValue != 0) {
-                builder.append(arabicToRomanRank[arabic.length() - rank - 1][rankValue - 1]);
-            }
-        }
-        return builder.toString();
     }
 
     public static int getArabicValue(char romanChar) {
@@ -69,8 +49,6 @@ public class RomanNumber extends Number implements Comparable<RomanNumber> {
                 return 500;
             case 'M':
                 return 1000;
-            // TODO: Кидать специфический рантайм
-            // TODO: Или ретёрнить ноль
             default:
                 return 0;
         }
@@ -80,8 +58,32 @@ public class RomanNumber extends Number implements Comparable<RomanNumber> {
         return intValue();
     }
 
+    public static String parseToRoman(int arabic) {
+        if (arabic < MIN_ARABIC_REPRESENTATION || arabic > MAX_ARABIC_REPRESENTATION) {
+            throw new NumberFormatException("Roman mast be in range [1, 3999] but is " + arabic);
+        }
+        return parseToRoman(Integer.toString(arabic));
+    }
+
+    private static String parseToRoman(String arabic) {
+        StringBuilder builder = new StringBuilder();
+        for (int rank = 0; rank < arabic.length(); rank++) {
+            int rankValue = Integer.parseInt(Character.toString(arabic.charAt(rank)));
+            if (rankValue != 0) {
+                builder.append(arabicToRomanRank[arabic.length() - rank - 1][rankValue - 1]);
+            }
+        }
+        return builder.toString();
+    }
+
     // TODO: Неадекватно, по возиожности переписать
+    // TODO: Проверять формат на неправильный порядок римских символов
     public static int parseToArabic(String roman) {
+
+        if (!roman.matches("[IVXLCDM]+")) {
+            throw new NumberFormatException("The wrong roman number format: " + roman);
+        }
+
         int result = 0;
 
         int[] arr = convertToRankArray(roman);
@@ -121,11 +123,6 @@ public class RomanNumber extends Number implements Comparable<RomanNumber> {
             arr[i] = getArabicValue(roman.charAt(i));
         }
         return arr;
-    }
-
-    // TODO: ПРоыверка границ
-    public static String parseToRoman(int arabic) {
-        return parseToRoman(Integer.toString(arabic));
     }
 
     /**
@@ -229,6 +226,11 @@ public class RomanNumber extends Number implements Comparable<RomanNumber> {
         if (!(o instanceof RomanNumber)) return false;
         RomanNumber that = (RomanNumber) o;
         return getArabicRepresentation() == that.getArabicRepresentation();
+    }
+
+    @Override
+    public String toString() {
+        return this.value;
     }
 
     @Override
