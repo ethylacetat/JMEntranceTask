@@ -7,7 +7,7 @@ import ru.ethylacetat.entrancetask.interfaces.NumberFactory;
 public class AbstractNumberFactory implements CalculatorFactory {
 
     NumberFactory arabicFactory = new ArabicIntegerFactory();
-    NumberFactory romanFactory = new RomanNumberFactory();
+    NumberFactory romanFactory = new RomanNumberFactory(20);
 
     Calculator arabicCalculator = new ArabicIntegerCalculator();
     Calculator romanCalculator = new RomanCalculator(romanFactory);

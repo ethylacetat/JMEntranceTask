@@ -176,6 +176,11 @@ public class RomanNumber extends Number implements Comparable<RomanNumber> {
         return this.arabicRepresentation;
     }
 
+    public String romanValue() {
+        return this.value;
+    }
+
+
     /**
      * Compares this object with the specified object for order.  Returns a
      * negative integer, zero, or a positive integer as this object is less
