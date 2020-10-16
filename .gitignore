@@ -12,6 +12,7 @@
 
 #mvn
 /out
+/target
 
 # Log files
 *.log
