@@ -18,11 +18,11 @@ public class RomanNumber extends Number implements Comparable<RomanNumber> {
     public static final RomanNumber MAX_VALUE = new RomanNumber(MAX_ARABIC_REPRESENTATION);
     public static final RomanNumber MIN_VALUE = new RomanNumber(MIN_ARABIC_REPRESENTATION);
 
+    private static final String ERROR_MESSAGE = "The wrong roman number format: %s";
+
     private final String value;
     private final int arabicRepresentation;
 
-    // TODO: protected?
-    // TODO: ArithmeticException
     public RomanNumber(int arabicRepresentation) {
         this.arabicRepresentation = arabicRepresentation;
         this.value = parseToRoman(arabicRepresentation);
@@ -54,6 +54,21 @@ public class RomanNumber extends Number implements Comparable<RomanNumber> {
         }
     }
 
+    private static boolean canRepeat(int romanChar) {
+        switch (romanChar) {
+            case 1:
+            case 10:
+            case 100:
+            case 1000:
+                return true;
+            case 5:
+            case 50:
+            case 500:
+            default:
+                return false;
+        }
+    }
+
     public int getArabicRepresentation() {
         return intValue();
     }
@@ -76,22 +91,23 @@ public class RomanNumber extends Number implements Comparable<RomanNumber> {
         return builder.toString();
     }
 
-    // TODO: Неадекватно, по возиожности переписать
-    // TODO: Проверять формат на неправильный порядок римских символов
     public static int parseToArabic(String roman) {
 
         if (!roman.matches("[IVXLCDM]+")) {
-            throw new NumberFormatException("The wrong roman number format: " + roman);
+            throw new NumberFormatException(String.format(ERROR_MESSAGE, roman));
         }
-
-        int result = 0;
 
         int[] arr = convertToRankArray(roman);
 
         int rankSum = 0;
+        int index = 0;
+        int inARow = 1;
+
+        int[] compressed = new int[arr.length];
 
         for (int i = 0; i < arr.length; i++) {
             int current = arr[i];
+
             int next = 0;
             // not last
             if (i + 1 < arr.length) {
@@ -103,18 +119,99 @@ public class RomanNumber extends Number implements Comparable<RomanNumber> {
             }
 
             if (current == next) {
+                if (!canRepeat(current)) {
+                    throw new NumberFormatException(String.format(ERROR_MESSAGE, roman));
+                }
+
+                inARow++;
+                if (inARow > 4) {
+                    throw new NumberFormatException(String.format(ERROR_MESSAGE, roman));
+                }
+
                 rankSum += current;
+                if (inARow == 3) {
+                    compressed[index] = rankSum;
+                    rankSum = 0;
+                    i++;
+                    index++;
+                }
             } else if (current < next) {
-                result += (next - rankSum);
+                if (!canSubtract(current, next)) {
+                    throw new NumberFormatException("The wrong roman number format: " + roman);
+                }
+                if (rankSum > current) {
+                    compressed[index] = rankSum;
+                    rankSum = 0;
+                    index++;
+                    continue;
+                }
+                compressed[index] = (next - current);
+                inARow = 1;
                 rankSum = 0;
-                i++; // переделать на инвариатный алгоритм .-.
+                index++;
+                i++;
             } else {
-                result += (rankSum);
+                compressed[index] = rankSum;
+                inARow = 1;
                 rankSum = 0;
+                index++;
             }
         }
 
+        int result = 0;
+
+        for (int i = 0; i < index; i++) {
+            int current = compressed[i];
+            int next = 0;
+            // not last
+            if (i + 1 < index) {
+                next = compressed[i + 1];
+            }
+
+            if (next != 0 && !canSum(current, next)) {
+                throw new NumberFormatException(String.format(ERROR_MESSAGE, roman));
+            }
+            result += current;
+        }
         return result;
+    }
+
+    private static boolean canSum(int first, int second) {
+        switch (first) {
+            case 5:
+                return second <= 3;
+            case 50:
+                return second <= 30;
+            case 500:
+                return second <= 300;
+            case 10:
+            case 100:
+            case 1000:
+                return first > second;
+            default:
+                return getRankDiff(first, second) > 0;
+        }
+    }
+
+    private static int getCountsOfDigits(int number) {
+        return (number == 0) ? 1 : (int) Math.ceil(Math.log10(Math.abs(number) + 0.5));
+    }
+
+    private static int getRankDiff(int first, int second) {
+        return getCountsOfDigits(first) - getCountsOfDigits(second);
+    }
+
+    private static boolean canSubtract(int first, int second) {
+        switch (first) {
+            case 1:
+                return second == 5 || second == 10;
+            case 10:
+                return second == 50 || second == 100;
+            case 100:
+                return second == 500 || second == 1000;
+            default:
+                return false;
+        }
     }
 
     private static int[] convertToRankArray(String roman) {

@@ -15,6 +15,7 @@ class RomanNumberTest {
             "100, C", "200, CC", "300, CCC", "400, CD", "500, D", "600, DC", "700, DCC", "800, DCCC", "900, CM",
             "1000, M", "2000, MM", "3000, MMM",
             "12, XII", "381, CCCLXXXI", "371, CCCLXXI", "3999, MMMCMXCIX", "1234, MCCXXXIV", "444, CDXLIV",
+            "1666, MDCLXVI"
     })
     void parseToRomanWithValidArgs(int arabicRepresentation, String actualRomanRepresentation) {
         Assertions.assertEquals(RomanNumber.parseToRoman(arabicRepresentation), actualRomanRepresentation);
@@ -26,11 +27,21 @@ class RomanNumberTest {
             "I, 1", "II , 2", "III, 3", "IV,4", "V,5", "VI,6", "VII,7", "VIII,8", "IX,9",
             "X,10", "XX,20", "XXX,30", "XL,40", "L,50", "LX,60", "LXX,70", "LXXX,80", "XC,90",
             "C,100", "CC,200", "CCC,300", "CD,400", "D,500", "DC,600", "DCC,700", "DCCC,800", "CM,900",
-            "M,1000", "MM,2000", "MMM,3000",
-            "XII,12", "CCCLXXXI,381", "CCCLXXI,371", "MMMCMXCIX,3999", "MCCXXXIV,1234", "CDXLIV,444",
+            "M,1000", "MM,2000", "MMM,3000", "XXXIX, 39",
+            "XII,12", "CCCLXXXI,381", "CCCLXXI,371", "MMMCMXCIX,3999", "MCCXXXIV,1234", "CDXLIV,444", "MDCLXVI, 1666"
     })
     void parseToArabicWithValidArgs(String roman, int actualArabic) {
         Assertions.assertEquals(RomanNumber.parseToArabic(roman), actualArabic);
+    }
+
+    @DisplayName("Test parseToArabic method invalid roman format")
+    @ParameterizedTest(name = "run #{index} with [{arguments}]")
+    @CsvSource({
+            "IIII", "IIIII", "VV", "VVVVV", "XXXX", "XXXXX", "LL", "LLLL", "CCCC", "CCCCC",
+            "DD", "DDDD", "MMMM", "MMMMM", "IIIV", "IXIXIX", "IVXLCDM", "XIXI", "IXIX", "XIXX", "XIIX", "XLX"
+    })
+    void parseToArabicInvalidRomanFormat(String roman) {
+        Assertions.assertThrows(NumberFormatException.class, () -> RomanNumber.parseToArabic(roman));
     }
 
     // TODO: Test parse with invalid
